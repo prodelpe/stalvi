@@ -10,7 +10,7 @@ class MonthlyOverviewChart extends ChartWidget
 {
     protected ?string $heading = 'Income vs Expenses';
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 3;
 
     protected int|string|array $columnSpan = 1;
 

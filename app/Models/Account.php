@@ -34,6 +34,22 @@ class Account extends Model
     }
 
     /**
+     * @return HasMany<Allocation, $this>
+     */
+    public function outgoingAllocations(): HasMany
+    {
+        return $this->hasMany(Allocation::class, 'source_account_id');
+    }
+
+    /**
+     * @return HasMany<Allocation, $this>
+     */
+    public function incomingAllocations(): HasMany
+    {
+        return $this->hasMany(Allocation::class, 'destination_account_id');
+    }
+
+    /**
      * @return Attribute<string, never>
      */
     protected function balance(): Attribute

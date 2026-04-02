@@ -2,15 +2,21 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\NavigationGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Actions\FilterAction;
+use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
+use UnitEnum;
 
 class Dashboard extends BaseDashboard
 {
     use HasFiltersAction;
+
+    protected static ?string $title = 'Overview';
+
+    protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Dashboards;
 
     protected function getHeaderActions(): array
     {
