@@ -21,6 +21,9 @@ class TransactionsTable
                 TextColumn::make('date')
                     ->date()
                     ->sortable(),
+                TextColumn::make('account.name')
+                    ->label('Account')
+                    ->placeholder('—'),
                 TextColumn::make('type')
                     ->badge(),
                 TextColumn::make('category.name')
@@ -38,6 +41,9 @@ class TransactionsTable
             ->filters([
                 SelectFilter::make('type')
                     ->options(TransactionType::class),
+                SelectFilter::make('account_id')
+                    ->label('Account')
+                    ->relationship('account', 'name'),
                 SelectFilter::make('category_id')
                     ->label('Category')
                     ->multiple()
@@ -47,7 +53,7 @@ class TransactionsTable
                         Category::roots()->with('children')->get()->each(function (Category $parent) use (&$grouped) {
                             $children = $parent->children->pluck('name', 'id')->toArray();
                             if ($children) {
-                                $grouped[$parent->icon . ' ' . $parent->name] = $children;
+                                $grouped[$parent->icon.' '.$parent->name] = $children;
                             }
                         });
 

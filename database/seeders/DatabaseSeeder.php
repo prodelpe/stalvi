@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedCategories();
 
+        $this->call(AccountSeeder::class);
         $this->call(DevelopmentSeeder::class);
     }
 

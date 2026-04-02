@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\TransactionType;
+use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,6 +19,7 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
+            'account_id' => Account::factory(),
             'category_id' => Category::factory(),
             'type' => fake()->randomElement(TransactionType::cases()),
             'amount' => fake()->randomFloat(2, 1, 500),

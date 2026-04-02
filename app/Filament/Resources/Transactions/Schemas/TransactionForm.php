@@ -15,6 +15,11 @@ class TransactionForm
     {
         return $schema
             ->components([
+                Select::make('account_id')
+                    ->label('Account')
+                    ->relationship('account', 'name')
+                    ->required()
+                    ->preload(),
                 Select::make('type')
                     ->options(TransactionType::class)
                     ->required()
@@ -41,7 +46,7 @@ class TransactionForm
                         foreach ($parents as $parent) {
                             $children = $parent->children->pluck('name', 'id')->toArray();
                             if ($children) {
-                                $grouped[$parent->icon . ' ' . $parent->name] = $children;
+                                $grouped[$parent->icon.' '.$parent->name] = $children;
                             }
                         }
 

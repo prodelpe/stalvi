@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Enums\TransactionType;
 use App\Models\Transaction;
 use Carbon\CarbonImmutable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -10,7 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
 
     protected ?string $pollingInterval = null;
 
@@ -66,17 +65,17 @@ class StatsOverview extends BaseWidget
         }
 
         return [
-            Stat::make('Expenses', number_format($currentExpenses, 2) . ' EUR')
+            Stat::make('Expenses', number_format($currentExpenses, 2).' EUR')
                 ->description($this->comparisonDescription($currentExpenses, $previousExpenses))
                 ->descriptionIcon($this->comparisonIcon($currentExpenses, $previousExpenses))
                 ->color('danger')
                 ->chart($expenseChart),
-            Stat::make('Income', number_format($currentIncomes, 2) . ' EUR')
+            Stat::make('Income', number_format($currentIncomes, 2).' EUR')
                 ->description($this->comparisonDescription($currentIncomes, $previousIncomes))
                 ->descriptionIcon($this->comparisonIcon($currentIncomes, $previousIncomes))
                 ->color('success')
                 ->chart($incomeChart),
-            Stat::make('Balance', number_format($balance, 2) . ' EUR')
+            Stat::make('Balance', number_format($balance, 2).' EUR')
                 ->color($balance >= 0 ? 'success' : 'danger'),
         ];
     }
@@ -89,7 +88,7 @@ class StatsOverview extends BaseWidget
 
         $change = (($current - $previous) / $previous) * 100;
 
-        return number_format(abs($change), 1) . '% ' . ($change >= 0 ? 'increase' : 'decrease');
+        return number_format(abs($change), 1).'% '.($change >= 0 ? 'increase' : 'decrease');
     }
 
     private function comparisonIcon(float $current, float $previous): string

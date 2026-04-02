@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['category_id', 'type', 'amount', 'description', 'date'])]
+#[Fillable(['account_id', 'category_id', 'type', 'amount', 'description', 'date'])]
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
@@ -29,6 +29,14 @@ class Transaction extends Model
     }
 
     /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    /**
      * @return BelongsTo<Category, $this>
      */
     public function category(): BelongsTo
@@ -37,7 +45,7 @@ class Transaction extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeExpenses(Builder $query): Builder
@@ -46,7 +54,7 @@ class Transaction extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeIncomes(Builder $query): Builder

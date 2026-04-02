@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\TransactionType;
+use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
 use Illuminate\Database\Seeder;
@@ -18,6 +18,9 @@ class DevelopmentSeeder extends Seeder
             return;
         }
 
+        $currentAccount = Account::where('name', 'Current')->first();
+        $savingsAccount = Account::where('name', 'Savings')->first();
+
         $expenseCategories = Category::leaves()
             ->whereHas('parent', fn ($q) => $q->where('name', '!=', 'Income'))
             ->get();
@@ -26,25 +29,39 @@ class DevelopmentSeeder extends Seeder
             ->whereHas('parent', fn ($q) => $q->where('name', 'Income'))
             ->get();
 
-        // ~100 expenses spread over the last 6 months
+        // ~100 expenses from the current account
         Transaction::factory()
             ->count(100)
             ->expense()
             ->sequence(fn () => [
+                'account_id' => $currentAccount->id,
                 'category_id' => $expenseCategories->random()->id,
                 'date' => fake()->dateTimeBetween('-6 months'),
                 'amount' => fake()->randomFloat(2, 1, 300),
             ])
             ->create();
 
-        // ~20 incomes (mostly salary, some secondary)
+        // ~18 incomes to current account
         Transaction::factory()
-            ->count(20)
+            ->count(18)
             ->income()
             ->sequence(fn () => [
+                'account_id' => $currentAccount->id,
                 'category_id' => $incomeCategories->random()->id,
                 'date' => fake()->dateTimeBetween('-6 months'),
                 'amount' => fake()->randomFloat(2, 50, 2500),
+            ])
+            ->create();
+
+        // ~2 incomes to savings account
+        Transaction::factory()
+            ->count(2)
+            ->income()
+            ->sequence(fn () => [
+                'account_id' => $savingsAccount->id,
+                'category_id' => $incomeCategories->random()->id,
+                'date' => fake()->dateTimeBetween('-6 months'),
+                'amount' => fake()->randomFloat(2, 100, 1000),
             ])
             ->create();
     }
