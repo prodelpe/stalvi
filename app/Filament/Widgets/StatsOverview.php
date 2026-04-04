@@ -46,24 +46,20 @@ class StatsOverview extends BaseWidget
             $cursor = $cursor->addDay();
         }
 
-        $currentAccount = Account::where('name', 'Current')->first();
-        $savingsAccount = Account::where('name', 'Savings')->first();
+        $stats = Account::all()->map(function (Account $account) {
+            $balance = (float) $account->balance;
 
-        return [
-            Stat::make('Current', number_format((float) $currentAccount?->balance, 2).' EUR')
-                ->icon('heroicon-o-credit-card')
-                ->color('primary'),
+            return Stat::make($account->icon.' '.$account->name, number_format($balance, 2).' EUR')
+                ->color($balance >= 0 ? 'success' : 'danger');
+        })->toArray();
 
-            Stat::make('Savings', number_format((float) $savingsAccount?->balance, 2).' EUR')
-                ->icon('heroicon-o-building-library')
-                ->color('success'),
+        $stats[] = Stat::make('Expenses', number_format($expenses, 2).' EUR')
+            ->description($this->comparisonDescription($expenses, $previousExpenses))
+            ->descriptionIcon($this->comparisonIcon($expenses, $previousExpenses))
+            ->color('danger')
+            ->chart($chart);
 
-            Stat::make('Expenses', number_format($expenses, 2).' EUR')
-                ->description($this->comparisonDescription($expenses, $previousExpenses))
-                ->descriptionIcon($this->comparisonIcon($expenses, $previousExpenses))
-                ->color('danger')
-                ->chart($chart),
-        ];
+        return $stats;
     }
 
     private function comparisonDescription(float $current, float $previous): string

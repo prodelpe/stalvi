@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\Rules\Enum;
 
 class TransactionController extends Controller
 {
@@ -33,7 +35,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'account_id' => ['required', 'exists:accounts,id'],
             'category_id' => ['required', 'exists:categories,id'],
-            'type' => ['required', 'in:income,expense'],
+            'type' => ['required', new Enum(TransactionType::class)],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
@@ -54,7 +56,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'account_id' => ['sometimes', 'exists:accounts,id'],
             'category_id' => ['sometimes', 'exists:categories,id'],
-            'type' => ['sometimes', 'in:income,expense'],
+            'type' => ['sometimes', new Enum(TransactionType::class)],
             'amount' => ['sometimes', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:255'],
             'date' => ['sometimes', 'date'],

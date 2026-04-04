@@ -49,7 +49,7 @@ class BudgetDashboard extends BaseDashboard
                         ->minValue(0),
                 ])
                 ->action(function (array $data): void {
-                    $budget = Budget::active()->first() ?? new Budget;
+                    $budget = Budget::first() ?? new Budget;
                     $budget->monthly_income = $data['monthly_income'];
                     $budget->save();
                 }),
