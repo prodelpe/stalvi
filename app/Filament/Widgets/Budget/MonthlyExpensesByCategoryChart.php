@@ -2,15 +2,13 @@
 
 namespace App\Filament\Widgets\Budget;
 
-use App\Models\Account;
 use App\Models\Transaction;
-use App\Services\BudgetService;
 use Carbon\CarbonImmutable;
 use Filament\Widgets\ChartWidget;
 
-class WeeklyExpensesByCategoryChart extends ChartWidget
+class MonthlyExpensesByCategoryChart extends ChartWidget
 {
-    protected ?string $heading = 'This week by category';
+    protected ?string $heading = 'This month by category';
 
     protected static ?int $sort = 2;
 
@@ -22,24 +20,13 @@ class WeeklyExpensesByCategoryChart extends ChartWidget
 
     protected function getData(): array
     {
-        $account = Account::whereHas('outgoingAllocations', fn ($q) => $q->where('is_active', true))->first();
-
-        if (! $account) {
-            return ['datasets' => [], 'labels' => []];
-        }
-
-        $service = new BudgetService;
-        $data = $service->calculateForMonth($account, CarbonImmutable::now());
-
-        if ($data['current_week_index'] === null) {
-            return ['datasets' => [], 'labels' => []];
-        }
-
-        $week = $data['weeks'][$data['current_week_index']];
+        $now = CarbonImmutable::now();
+        $monthStart = $now->startOfMonth();
+        $monthEnd = $now->endOfMonth();
 
         $expenses = Transaction::expenses()
-            ->where('account_id', $account->id)
-            ->whereBetween('date', [$week['start'], $week['end']])
+            ->whereBetween('date', [$monthStart, $monthEnd])
+            ->whereHas('category', fn ($q) => $q->where('is_fixed', false))
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
             ->join('categories as parents', 'categories.parent_id', '=', 'parents.id')
             ->selectRaw('parents.name as parent_name, parents.color, parents.icon, SUM(transactions.amount) as total')

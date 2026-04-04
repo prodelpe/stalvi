@@ -6,6 +6,7 @@ use App\Models\Category;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class CategoryForm
@@ -25,6 +26,9 @@ class CategoryForm
                     ->options(Category::roots()->pluck('name', 'id'))
                     ->searchable()
                     ->nullable(),
+                Toggle::make('is_fixed')
+                    ->label('Fixed expense')
+                    ->helperText('Fixed expenses are excluded from the weekly budget'),
             ]);
     }
 }

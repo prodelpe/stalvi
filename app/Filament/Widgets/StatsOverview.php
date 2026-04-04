@@ -2,88 +2,75 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Account;
 use App\Models\Transaction;
 use Carbon\CarbonImmutable;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
-    protected static ?int $sort = 1;
+    use InteractsWithPageFilters;
+
+    protected static ?int $sort = 0;
 
     protected ?string $pollingInterval = null;
 
     protected function getStats(): array
     {
-        $currentStart = CarbonImmutable::now()->startOfMonth();
-        $currentEnd = CarbonImmutable::now()->endOfMonth();
-        $previousStart = $currentStart->subMonth();
-        $previousEnd = $currentStart->subDay()->endOfDay();
+        [$start, $end] = $this->getPeriodDates();
 
-        $currentExpenses = Transaction::expenses()
-            ->whereBetween('date', [$currentStart, $currentEnd])
+        $expenses = (float) Transaction::expenses()
+            ->whereBetween('date', [$start, $end])
             ->sum('amount');
 
-        $currentIncomes = Transaction::incomes()
-            ->whereBetween('date', [$currentStart, $currentEnd])
-            ->sum('amount');
+        $previousStart = $start->subDays($start->diffInDays($end) + 1);
+        $previousEnd = $start->subDay()->endOfDay();
 
-        $previousExpenses = Transaction::expenses()
+        $previousExpenses = (float) Transaction::expenses()
             ->whereBetween('date', [$previousStart, $previousEnd])
             ->sum('amount');
 
-        $previousIncomes = Transaction::incomes()
-            ->whereBetween('date', [$previousStart, $previousEnd])
-            ->sum('amount');
-
-        $balance = $currentIncomes - $currentExpenses;
-
-        // Daily chart data for current month
         $dailyExpenses = Transaction::expenses()
-            ->whereBetween('date', [$currentStart, $currentEnd])
+            ->whereBetween('date', [$start, $end])
             ->selectRaw('date, SUM(amount) as total')
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('total', 'date')
             ->toArray();
 
-        $dailyIncomes = Transaction::incomes()
-            ->whereBetween('date', [$currentStart, $currentEnd])
-            ->selectRaw('date, SUM(amount) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date')
-            ->toArray();
-
-        $daysInMonth = $currentStart->daysInMonth;
-        $expenseChart = [];
-        $incomeChart = [];
-        for ($i = 1; $i <= $daysInMonth; $i++) {
-            $day = $currentStart->day($i)->format('Y-m-d');
-            $expenseChart[] = (float) ($dailyExpenses[$day] ?? 0);
-            $incomeChart[] = (float) ($dailyIncomes[$day] ?? 0);
+        $chart = [];
+        $cursor = $start;
+        while ($cursor->lte($end)) {
+            $chart[] = (float) ($dailyExpenses[$cursor->format('Y-m-d')] ?? 0);
+            $cursor = $cursor->addDay();
         }
 
+        $currentAccount = Account::where('name', 'Current')->first();
+        $savingsAccount = Account::where('name', 'Savings')->first();
+
         return [
-            Stat::make('Expenses', number_format($currentExpenses, 2).' EUR')
-                ->description($this->comparisonDescription($currentExpenses, $previousExpenses))
-                ->descriptionIcon($this->comparisonIcon($currentExpenses, $previousExpenses))
+            Stat::make('Current', number_format((float) $currentAccount?->balance, 2).' EUR')
+                ->icon('heroicon-o-credit-card')
+                ->color('primary'),
+
+            Stat::make('Savings', number_format((float) $savingsAccount?->balance, 2).' EUR')
+                ->icon('heroicon-o-building-library')
+                ->color('success'),
+
+            Stat::make('Expenses', number_format($expenses, 2).' EUR')
+                ->description($this->comparisonDescription($expenses, $previousExpenses))
+                ->descriptionIcon($this->comparisonIcon($expenses, $previousExpenses))
                 ->color('danger')
-                ->chart($expenseChart),
-            Stat::make('Income', number_format($currentIncomes, 2).' EUR')
-                ->description($this->comparisonDescription($currentIncomes, $previousIncomes))
-                ->descriptionIcon($this->comparisonIcon($currentIncomes, $previousIncomes))
-                ->color('success')
-                ->chart($incomeChart),
-            Stat::make('Balance', number_format($balance, 2).' EUR')
-                ->color($balance >= 0 ? 'success' : 'danger'),
+                ->chart($chart),
         ];
     }
 
     private function comparisonDescription(float $current, float $previous): string
     {
         if ($previous == 0) {
-            return 'No data last month';
+            return 'No data in previous period';
         }
 
         $change = (($current - $previous) / $previous) * 100;
@@ -100,5 +87,31 @@ class StatsOverview extends BaseWidget
         return $current >= $previous
             ? 'heroicon-m-arrow-trending-up'
             : 'heroicon-m-arrow-trending-down';
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    private function getPeriodDates(): array
+    {
+        $period = $this->pageFilters['period'] ?? 'current_month';
+        $now = CarbonImmutable::now();
+
+        if ($period === 'custom') {
+            $start = $this->pageFilters['startDate'] ?? null;
+            $end = $this->pageFilters['endDate'] ?? null;
+
+            if ($start && $end) {
+                return [CarbonImmutable::parse($start)->startOfDay(), CarbonImmutable::parse($end)->endOfDay()];
+            }
+        }
+
+        return match ($period) {
+            'last_month' => [$now->subMonth()->startOfMonth(), $now->subMonth()->endOfMonth()],
+            'last_3_months' => [$now->subMonths(3)->startOfMonth(), $now->endOfMonth()],
+            'last_6_months' => [$now->subMonths(6)->startOfMonth(), $now->endOfMonth()],
+            'current_year' => [$now->startOfYear(), $now->endOfMonth()],
+            default => [$now->startOfMonth(), $now->endOfMonth()],
+        };
     }
 }

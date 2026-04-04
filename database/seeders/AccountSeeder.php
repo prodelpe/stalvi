@@ -4,12 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\Account;
 use App\Models\Allocation;
+use App\Models\Budget;
 use Illuminate\Database\Seeder;
 
 class AccountSeeder extends Seeder
 {
     /**
-     * Seed the application's database with default accounts and allocations.
+     * Seed the application's database with default accounts, allocations and budget.
      */
     public function run(): void
     {
@@ -17,14 +18,14 @@ class AccountSeeder extends Seeder
             'name' => 'Current',
             'icon' => "\u{1F4B3}",
             'color' => '#3b82f6',
-            'initial_balance' => 0,
+            'initial_balance' => 1500,
         ]);
 
         $savings = Account::create([
             'name' => 'Savings',
             'icon' => "\u{1F3E6}",
             'color' => '#22c55e',
-            'initial_balance' => 0,
+            'initial_balance' => 700,
         ]);
 
         Allocation::create([
@@ -32,6 +33,10 @@ class AccountSeeder extends Seeder
             'destination_account_id' => $savings->id,
             'amount' => 500.00,
             'is_active' => true,
+        ]);
+
+        Budget::create([
+            'monthly_income' => 1500.00,
         ]);
     }
 }

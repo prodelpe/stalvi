@@ -10,11 +10,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['parent_id', 'name', 'icon', 'color'])]
+#[Fillable(['parent_id', 'name', 'icon', 'color', 'is_fixed'])]
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_fixed' => 'boolean',
+        ];
+    }
 
     /**
      * @return BelongsTo<self, $this>
@@ -41,7 +51,7 @@ class Category extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeRoots(Builder $query): Builder
@@ -50,7 +60,7 @@ class Category extends Model
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeLeaves(Builder $query): Builder

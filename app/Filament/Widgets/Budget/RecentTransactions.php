@@ -3,16 +3,13 @@
 namespace App\Filament\Widgets\Budget;
 
 use App\Enums\TransactionType;
-use App\Models\Account;
 use App\Models\Transaction;
-use App\Services\BudgetService;
 use Carbon\CarbonImmutable;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
 
-class CurrentWeekTransactions extends BaseWidget
+class RecentTransactions extends BaseWidget
 {
     protected static ?int $sort = 3;
 
@@ -24,9 +21,17 @@ class CurrentWeekTransactions extends BaseWidget
 
     public function table(Table $table): Table
     {
+        $now = CarbonImmutable::now();
+
         return $table
-            ->heading('This week\'s expenses')
-            ->query($this->getQuery())
+            ->heading('This month\'s variable expenses')
+            ->query(
+                Transaction::query()
+                    ->with('category.parent')
+                    ->where('type', TransactionType::Expense)
+                    ->whereHas('category', fn ($q) => $q->where('is_fixed', false))
+                    ->whereBetween('date', [$now->startOfMonth(), $now->endOfMonth()])
+            )
             ->columns([
                 TextColumn::make('date')
                     ->date(),
@@ -41,29 +46,5 @@ class CurrentWeekTransactions extends BaseWidget
             ])
             ->defaultSort('date', 'desc')
             ->paginated(false);
-    }
-
-    private function getQuery(): Builder
-    {
-        $account = Account::whereHas('outgoingAllocations', fn ($q) => $q->where('is_active', true))->first();
-
-        if (! $account) {
-            return Transaction::query()->whereRaw('1 = 0');
-        }
-
-        $service = new BudgetService;
-        $data = $service->calculateForMonth($account, CarbonImmutable::now());
-
-        if ($data['current_week_index'] === null) {
-            return Transaction::query()->whereRaw('1 = 0');
-        }
-
-        $week = $data['weeks'][$data['current_week_index']];
-
-        return Transaction::query()
-            ->with('category.parent')
-            ->where('account_id', $account->id)
-            ->where('type', TransactionType::Expense)
-            ->whereBetween('date', [$week['start'], $week['end']]);
     }
 }
