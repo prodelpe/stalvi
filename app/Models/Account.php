@@ -50,15 +50,16 @@ class Account extends Model
     }
 
     /**
-     * @return Attribute<string, never>
+     * @return Attribute<float, never>
      */
     protected function balance(): Attribute
     {
-        return Attribute::get(function (): string {
-            $incomes = (float) $this->transactions()->incomes()->sum('amount');
-            $expenses = (float) $this->transactions()->expenses()->sum('amount');
+        return Attribute::get(function (): float {
+            $net = (float) $this->transactions()
+                ->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as net")
+                ->value('net');
 
-            return number_format((float) $this->initial_balance + $incomes - $expenses, 2, '.', '');
+            return round((float) $this->initial_balance + $net, 2);
         });
     }
 }
