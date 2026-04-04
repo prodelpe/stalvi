@@ -34,10 +34,9 @@ class StatsOverview extends BaseWidget
 
         $dailyExpenses = Transaction::expenses()
             ->whereBetween('date', [$start, $end])
-            ->selectRaw('date, SUM(amount) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date')
+            ->get()
+            ->groupBy(fn ($t) => $t->date->format('Y-m-d'))
+            ->map(fn ($group) => (float) $group->sum('amount'))
             ->toArray();
 
         $chart = [];
