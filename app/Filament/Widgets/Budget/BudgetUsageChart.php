@@ -26,8 +26,9 @@ class BudgetUsageChart extends ChartWidget
         }
 
         $spent = $result->variableExpenses;
-        $remaining = max($result->remaining, 0);
-        $over = $result->remaining < 0 ? abs($result->remaining) : 0;
+        $monthRemaining = $result->availableMonth - $result->variableExpenses;
+        $remaining = max($monthRemaining, 0);
+        $over = $monthRemaining < 0 ? abs($monthRemaining) : 0;
 
         $data = [$spent, $remaining];
         $colors = ['#ef4444', '#22c55e'];
