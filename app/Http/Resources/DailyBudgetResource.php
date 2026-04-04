@@ -13,12 +13,14 @@ class DailyBudgetResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'daily_budget' => $this->dailyBudget,
+            'daily_allowance' => $this->dailyAllowance,
+            'left_today' => $this->leftToday,
+            'spent_today' => $this->spentToday,
+            'accumulated' => $this->accumulated,
             'monthly_income' => $this->monthlyIncome,
             'fixed_expenses' => $this->fixedExpenses,
             'variable_expenses' => $this->variableExpenses,
             'available_month' => $this->availableMonth,
-            'remaining' => $this->remaining,
             'days_left' => $this->daysLeft,
             'day_of_month' => $this->dayOfMonth,
             'days_in_month' => $this->daysInMonth,

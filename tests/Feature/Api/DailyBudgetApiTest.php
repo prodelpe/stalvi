@@ -17,12 +17,14 @@ it('returns daily budget', function () {
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
-                'daily_budget',
+                'daily_allowance',
+                'left_today',
+                'spent_today',
+                'accumulated',
                 'monthly_income',
                 'fixed_expenses',
                 'variable_expenses',
                 'available_month',
-                'remaining',
                 'days_left',
                 'day_of_month',
                 'days_in_month',

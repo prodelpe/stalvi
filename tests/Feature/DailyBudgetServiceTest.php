@@ -10,84 +10,79 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->budget = Budget::factory()->create(['monthly_income' => 2000.00]);
+    $this->budget = Budget::factory()->create(['monthly_income' => 3000.00]);
 
     $this->fixedCategory = Category::factory()->create(['is_fixed' => true]);
     $this->variableCategory = Category::factory()->create(['is_fixed' => false]);
 });
 
-it('calculates daily budget correctly', function () {
-    $date = CarbonImmutable::parse('2026-04-15');
-
-    Transaction::factory()->expense()->create([
-        'category_id' => $this->fixedCategory->id,
-        'amount' => 500,
-        'date' => '2026-04-01',
-    ]);
-
-    Transaction::factory()->expense()->create([
-        'category_id' => $this->variableCategory->id,
-        'amount' => 300,
-        'date' => '2026-04-10',
-    ]);
-
-    $result = app(DailyBudgetService::class)->calculate($date);
-
-    expect($result)
-        ->monthlyIncome->toBe(2000.0)
-        ->fixedExpenses->toBe(500.0)
-        ->variableExpenses->toBe(300.0)
-        ->availableMonth->toBe(1500.0)
-        ->remaining->toBe(1200.0)
-        ->daysLeft->toBe(16)
-        ->dailyBudget->toBe(75.0)
-        ->dayOfMonth->toBe(15)
-        ->daysInMonth->toBe(30);
-});
-
-it('returns full budget on first day of month with no expenses', function () {
+it('calculates daily allowance correctly', function () {
     $date = CarbonImmutable::parse('2026-04-01');
 
     $result = app(DailyBudgetService::class)->calculate($date);
 
+    // 3000 income, 0 fixed = 3000 available / 30 days = 100/day
     expect($result)
-        ->availableMonth->toBe(2000.0)
-        ->remaining->toBe(2000.0)
-        ->daysLeft->toBe(30)
-        ->dailyBudget->toBe(round(2000 / 30, 2));
+        ->monthlyIncome->toBe(3000.0)
+        ->dailyAllowance->toBe(100.0)
+        ->leftToday->toBe(100.0)
+        ->spentToday->toBe(0.0)
+        ->accumulated->toBe(0.0);
 });
 
-it('returns remaining budget on last day of month', function () {
-    $date = CarbonImmutable::parse('2026-04-30');
+it('subtracts spent today from left today', function () {
+    $date = CarbonImmutable::parse('2026-04-01');
 
     Transaction::factory()->expense()->create([
         'category_id' => $this->variableCategory->id,
-        'amount' => 1800,
-        'date' => '2026-04-15',
+        'amount' => 30,
+        'date' => '2026-04-01',
     ]);
 
     $result = app(DailyBudgetService::class)->calculate($date);
 
+    // 100/day - 30 spent = 70 left
     expect($result)
-        ->daysLeft->toBe(1)
-        ->remaining->toBe(200.0)
-        ->dailyBudget->toBe(200.0);
+        ->dailyAllowance->toBe(100.0)
+        ->spentToday->toBe(30.0)
+        ->leftToday->toBe(70.0);
 });
 
-it('returns negative daily budget when over budget', function () {
-    $date = CarbonImmutable::parse('2026-04-20');
+it('accumulates unspent budget from previous days', function () {
+    $date = CarbonImmutable::parse('2026-04-03');
 
+    // Days 1 and 2: no spending. Accumulated = 100*2 - 0 = 200
+    $result = app(DailyBudgetService::class)->calculate($date);
+
+    expect($result)
+        ->dailyAllowance->toBe(100.0)
+        ->accumulated->toBe(200.0)
+        ->leftToday->toBe(300.0); // 100 + 200
+});
+
+it('reduces accumulated when overspending previous days', function () {
+    $date = CarbonImmutable::parse('2026-04-03');
+
+    // Day 1: spent 150 (50 over allowance)
     Transaction::factory()->expense()->create([
         'category_id' => $this->variableCategory->id,
-        'amount' => 2500,
-        'date' => '2026-04-10',
+        'amount' => 150,
+        'date' => '2026-04-01',
+    ]);
+
+    // Day 2: spent 80 (20 under)
+    Transaction::factory()->expense()->create([
+        'category_id' => $this->variableCategory->id,
+        'amount' => 80,
+        'date' => '2026-04-02',
     ]);
 
     $result = app(DailyBudgetService::class)->calculate($date);
 
+    // Expected for 2 days: 200. Spent before today: 230. Accumulated: -30
     expect($result)
-        ->remaining->toBeLessThan(0)
-        ->dailyBudget->toBeLessThan(0);
+        ->accumulated->toBe(-30.0)
+        ->leftToday->toBe(70.0); // 100 + (-30) - 0
 });
 
 it('returns null when no budget exists', function () {
@@ -98,20 +93,21 @@ it('returns null when no budget exists', function () {
     expect($result)->toBeNull();
 });
 
-it('ignores fixed expenses in variable calculation', function () {
-    $date = CarbonImmutable::parse('2026-04-15');
+it('ignores fixed expenses in daily calculation', function () {
+    $date = CarbonImmutable::parse('2026-04-01');
 
     Transaction::factory()->expense()->create([
         'category_id' => $this->fixedCategory->id,
-        'amount' => 800,
-        'date' => '2026-04-05',
+        'amount' => 500,
+        'date' => '2026-04-01',
     ]);
 
     $result = app(DailyBudgetService::class)->calculate($date);
 
+    // 3000 - 500 fixed = 2500 / 30 = 83.33/day
     expect($result)
-        ->fixedExpenses->toBe(800.0)
-        ->variableExpenses->toBe(0.0)
-        ->availableMonth->toBe(1200.0)
-        ->remaining->toBe(1200.0);
+        ->fixedExpenses->toBe(500.0)
+        ->dailyAllowance->toBe(83.33)
+        ->spentToday->toBe(0.0)
+        ->leftToday->toBe(83.33);
 });

@@ -31,12 +31,18 @@ class DailyBudgetService
             ->whereBetween('date', [$monthStart, $date])
             ->sum('amount');
 
+        $spentToday = (float) Transaction::expenses()
+            ->whereHas('category', fn ($q) => $q->where('is_fixed', false))
+            ->whereDate('date', $date)
+            ->sum('amount');
+
         $daysLeft = $date->diffInDays($monthEnd) + 1;
 
         return new DailyBudgetResult(
             monthlyIncome: (float) $budget->monthly_income,
             fixedExpenses: $fixedExpenses,
             variableExpenses: $variableExpenses,
+            spentToday: $spentToday,
             daysLeft: $daysLeft,
             dayOfMonth: $date->day,
             daysInMonth: $date->daysInMonth,
