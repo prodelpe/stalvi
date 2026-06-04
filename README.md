@@ -16,13 +16,29 @@ You set your monthly income. The app subtracts your fixed expenses and divides t
 
 ## Features
 
-### Web (Filament)
-- Daily Budget dashboard with stats and charts
-- Overview dashboard with monthly analytics
+### Overview dashboard
+- Net worth trend (24 months)
+- Expenses by category with period filter
+- Income breakdown (fixed / variable / saved / remaining)
+- Top 5 spending categories
+- Spending by category (12-month stacked chart)
+- Income vs expenses (12 months)
+- Daily variable spending chart
+
+### Daily Budget dashboard
+- Daily allowance with accumulated savings
+- Monthly budget usage
+- Daily spending vs target
+- Savings rate (12 months)
+- Month-end forecast
+- This month's variable expenses
+
+### Management
 - Transaction management (income/expense)
 - Multiple accounts with balance tracking
 - Hierarchical categories (fixed vs variable)
 - Allocations (transfers between accounts)
+- Color palette switcher
 
 ### API
 - `GET /api/daily-budget` — today's allowance, spent, accumulated
@@ -58,6 +74,12 @@ npm run build
 ```
 
 The app is served by Laravel Herd at `http://stalvi.test`. Default login: `admin@example.com` / `password`.
+
+To seed with 2 years of realistic demo data instead:
+
+```bash
+php artisan migrate:fresh --seeder=DemoSeeder
+```
 
 ## Development
 
