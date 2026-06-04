@@ -17,7 +17,6 @@ class AccountFactory extends Factory
     {
         return [
             'name' => fake()->word(),
-            'icon' => fake()->emoji(),
             'color' => fake()->hexColor(),
             'initial_balance' => fake()->randomFloat(2, 0, 5000),
         ];

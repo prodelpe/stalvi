@@ -15,8 +15,6 @@ class AccountForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                TextInput::make('icon')
-                    ->maxLength(10),
                 ColorPicker::make('color'),
                 TextInput::make('initial_balance')
                     ->label('Initial balance')

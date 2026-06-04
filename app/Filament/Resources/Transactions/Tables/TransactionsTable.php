@@ -53,7 +53,7 @@ class TransactionsTable
                         Category::roots()->with('children')->get()->each(function (Category $parent) use (&$grouped) {
                             $children = $parent->children->pluck('name', 'id')->toArray();
                             if ($children) {
-                                $grouped[$parent->icon.' '.$parent->name] = $children;
+                                $grouped[$parent->name] = $children;
                             }
                         });
 

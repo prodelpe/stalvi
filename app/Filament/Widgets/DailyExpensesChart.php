@@ -11,7 +11,7 @@ class DailyExpensesChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected ?string $heading = 'Daily expenses';
+    protected ?string $heading = 'Daily variable spending';
 
     protected static ?int $sort = 4;
 
@@ -25,6 +25,7 @@ class DailyExpensesChart extends ChartWidget
 
         $dailyTotals = Transaction::expenses()
             ->whereBetween('date', [$start, $end])
+            ->whereHas('category', fn ($q) => $q->where('is_fixed', false))
             ->get()
             ->groupBy(fn ($t) => $t->date->format('Y-m-d'))
             ->map(fn ($group) => (float) $group->sum('amount'))
@@ -66,7 +67,7 @@ class DailyExpensesChart extends ChartWidget
      */
     private function getPeriodDates(): array
     {
-        $period = $this->pageFilters['period'] ?? 'current_month';
+        $period = $this->pageFilters['period'] ?? 'last_3_months';
         $now = CarbonImmutable::now();
 
         if ($period === 'custom') {

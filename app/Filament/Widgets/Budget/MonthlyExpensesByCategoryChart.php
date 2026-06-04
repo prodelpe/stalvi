@@ -29,8 +29,8 @@ class MonthlyExpensesByCategoryChart extends ChartWidget
             ->whereHas('category', fn ($q) => $q->where('is_fixed', false))
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
             ->join('categories as parents', 'categories.parent_id', '=', 'parents.id')
-            ->selectRaw('parents.name as parent_name, parents.color, parents.icon, SUM(transactions.amount) as total')
-            ->groupBy('parents.id', 'parents.name', 'parents.color', 'parents.icon')
+            ->selectRaw('parents.name as parent_name, parents.color, SUM(transactions.amount) as total')
+            ->groupBy('parents.id', 'parents.name', 'parents.color')
             ->orderByDesc('total')
             ->get();
 
@@ -41,7 +41,7 @@ class MonthlyExpensesByCategoryChart extends ChartWidget
                     'backgroundColor' => $expenses->pluck('color')->toArray(),
                 ],
             ],
-            'labels' => $expenses->map(fn ($row) => $row->icon.' '.$row->parent_name)->toArray(),
+            'labels' => $expenses->pluck('parent_name')->toArray(),
         ];
     }
 

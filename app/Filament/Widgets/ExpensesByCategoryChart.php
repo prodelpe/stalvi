@@ -31,14 +31,13 @@ class ExpensesByCategoryChart extends ChartWidget
         if ($parentCategoryId) {
             $parent = Category::find($parentCategoryId);
 
-            return 'Expenses: '.($parent?->icon.' '.$parent?->name);
+            return 'Expenses: '.$parent?->name;
         }
 
         $viewMode = $this->filters['viewMode'] ?? 'parent';
+        $label = $this->getPeriodLabel();
 
-        return $viewMode === 'subcategory'
-            ? 'Expenses by subcategory'
-            : 'Expenses by category';
+        return ($viewMode === 'subcategory' ? 'Expenses by subcategory' : 'Expenses by category').' · '.$label;
     }
 
     public function filtersSchema(Schema $schema): Schema
@@ -113,15 +112,10 @@ class ExpensesByCategoryChart extends ChartWidget
             ->whereBetween('date', [$start, $end])
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
             ->join('categories as parents', 'categories.parent_id', '=', 'parents.id')
-            ->selectRaw('parents.name as label, parents.color, parents.icon, SUM(transactions.amount) as total')
-            ->groupBy('parents.id', 'parents.name', 'parents.color', 'parents.icon')
+            ->selectRaw('parents.name as label, parents.color, SUM(transactions.amount) as total')
+            ->groupBy('parents.id', 'parents.name', 'parents.color')
             ->orderByDesc('total')
-            ->get()
-            ->map(function ($row) {
-                $row->label = $row->icon.' '.$row->label;
-
-                return $row;
-            });
+            ->get();
     }
 
     private function getSubcategoryData(CarbonImmutable $start, CarbonImmutable $end, ?int $parentId = null): Collection
@@ -169,12 +163,24 @@ class ExpensesByCategoryChart extends ChartWidget
         return sprintf('#%02x%02x%02x', $r, $g, $b);
     }
 
+    private function getPeriodLabel(): string
+    {
+        return match ($this->pageFilters['period'] ?? 'last_3_months') {
+            'last_month' => 'Last month',
+            'last_3_months' => 'Last 3 months',
+            'last_6_months' => 'Last 6 months',
+            'current_year' => 'Current year',
+            'custom' => 'Custom range',
+            default => 'Current month',
+        };
+    }
+
     /**
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
     private function getPeriodDates(): array
     {
-        $period = $this->pageFilters['period'] ?? 'current_month';
+        $period = $this->pageFilters['period'] ?? 'last_3_months';
         $now = CarbonImmutable::now();
 
         if ($period === 'custom') {

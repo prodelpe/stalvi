@@ -16,6 +16,8 @@ class Dashboard extends BaseDashboard
 
     protected static ?string $title = 'Overview';
 
+    protected static ?int $navigationSort = -2;
+
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Dashboards;
 
     protected function getHeaderActions(): array
@@ -33,7 +35,7 @@ class Dashboard extends BaseDashboard
                             'current_year' => 'Current year',
                             'custom' => 'Custom range',
                         ])
-                        ->default('current_month')
+                        ->default('last_3_months')
                         ->live(),
                     DatePicker::make('startDate')
                         ->label('From')

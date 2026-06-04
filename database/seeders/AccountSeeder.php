@@ -16,14 +16,12 @@ class AccountSeeder extends Seeder
     {
         $current = Account::create([
             'name' => 'Current',
-            'icon' => "\u{1F4B3}",
             'color' => '#3b82f6',
             'initial_balance' => 1500,
         ]);
 
         $savings = Account::create([
             'name' => 'Savings',
-            'icon' => "\u{1F3E6}",
             'color' => '#22c55e',
             'initial_balance' => 700,
         ]);

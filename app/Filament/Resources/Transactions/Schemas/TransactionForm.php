@@ -46,7 +46,7 @@ class TransactionForm
                         foreach ($parents as $parent) {
                             $children = $parent->children->pluck('name', 'id')->toArray();
                             if ($children) {
-                                $grouped[$parent->icon.' '.$parent->name] = $children;
+                                $grouped[$parent->name] = $children;
                             }
                         }
 

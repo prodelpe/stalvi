@@ -17,7 +17,6 @@ class CategoryFactory extends Factory
     {
         return [
             'name' => fake()->word(),
-            'icon' => fake()->emoji(),
             'color' => fake()->hexColor(),
         ];
     }
@@ -26,7 +25,6 @@ class CategoryFactory extends Factory
     {
         return $this->state([
             'parent_id' => $parent->id,
-            'icon' => null,
             'color' => null,
         ]);
     }

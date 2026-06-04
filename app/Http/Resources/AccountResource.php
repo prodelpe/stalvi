@@ -15,7 +15,6 @@ class AccountResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'icon' => $this->icon,
             'color' => $this->color,
             'balance' => (float) $this->balance,
         ];

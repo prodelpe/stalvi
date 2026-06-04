@@ -49,7 +49,7 @@ class StatsOverview extends BaseWidget
         $stats = Account::all()->map(function (Account $account) {
             $balance = (float) $account->balance;
 
-            return Stat::make($account->icon.' '.$account->name, number_format($balance, 2).' EUR')
+            return Stat::make($account->name, number_format($balance, 2).' EUR')
                 ->color($balance >= 0 ? 'success' : 'danger');
         })->toArray();
 
@@ -89,7 +89,7 @@ class StatsOverview extends BaseWidget
      */
     private function getPeriodDates(): array
     {
-        $period = $this->pageFilters['period'] ?? 'current_month';
+        $period = $this->pageFilters['period'] ?? 'last_3_months';
         $now = CarbonImmutable::now();
 
         if ($period === 'custom') {

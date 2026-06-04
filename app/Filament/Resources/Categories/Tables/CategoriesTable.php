@@ -18,8 +18,6 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('icon')
-                    ->label(''),
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('parent.name')

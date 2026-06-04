@@ -18,8 +18,6 @@ class CategoryForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                TextInput::make('icon')
-                    ->maxLength(10),
                 ColorPicker::make('color'),
                 Select::make('parent_id')
                     ->label('Parent category')

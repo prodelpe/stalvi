@@ -16,8 +16,6 @@ class AccountsTable
     {
         return $table
             ->columns([
-                TextColumn::make('icon')
-                    ->label(''),
                 TextColumn::make('name')
                     ->searchable(),
                 ColorColumn::make('color'),

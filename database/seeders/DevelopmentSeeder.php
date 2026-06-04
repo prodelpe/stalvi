@@ -18,12 +18,10 @@ class DevelopmentSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! app()->isLocal()) {
-            return;
-        }
+        $this->call(DatabaseSeeder::class);
 
-        $current = Account::where('name', 'Current')->first();
-        $savings = Account::where('name', 'Savings')->first();
+        $current = Account::where('name', 'Current')->firstOrFail();
+        $savings = Account::where('name', 'Savings')->firstOrFail();
 
         $categories = Category::leaves()->get()->keyBy('name');
 

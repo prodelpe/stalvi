@@ -16,6 +16,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Octopy\Filament\Palette\PaletteSwitcherPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,7 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->maxContentWidth(Width::Full)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Violet,
+            ])
+            ->plugins([
+                PaletteSwitcherPlugin::make(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

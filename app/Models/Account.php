@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'icon', 'color', 'initial_balance'])]
+#[Fillable(['name', 'color', 'initial_balance'])]
 class Account extends Model
 {
     /** @use HasFactory<AccountFactory> */
