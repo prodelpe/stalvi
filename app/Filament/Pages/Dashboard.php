@@ -20,6 +20,11 @@ class Dashboard extends BaseDashboard
 
     protected static string|UnitEnum|null $navigationGroup = NavigationGroup::Dashboards;
 
+    public function getColumns(): int|array
+    {
+        return 3;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

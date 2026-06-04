@@ -7,7 +7,9 @@ use App\Filament\Widgets\Budget\BudgetUsageChart;
 use App\Filament\Widgets\Budget\DailyBudgetHero;
 use App\Filament\Widgets\Budget\DailyProgressChart;
 use App\Filament\Widgets\Budget\MonthlyExpensesByCategoryChart;
+use App\Filament\Widgets\Budget\MonthlyForecastWidget;
 use App\Filament\Widgets\Budget\RecentTransactions;
+use App\Filament\Widgets\Budget\SavingsRateChart;
 use App\Models\Budget;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -56,13 +58,20 @@ class BudgetDashboard extends BaseDashboard
         ];
     }
 
+    public function getColumns(): int|array
+    {
+        return 3;
+    }
+
     public function getWidgets(): array
     {
         return [
             DailyBudgetHero::class,
             BudgetUsageChart::class,
+            SavingsRateChart::class,
             MonthlyExpensesByCategoryChart::class,
             DailyProgressChart::class,
+            MonthlyForecastWidget::class,
             RecentTransactions::class,
         ];
     }

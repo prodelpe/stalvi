@@ -13,7 +13,7 @@ class DailyProgressChart extends ChartWidget
 
     protected static ?int $sort = 1;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 1;
 
     protected ?string $pollingInterval = null;
 
